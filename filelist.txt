@@ -1,3 +1,7 @@
-filename
-dev filename1.sql
-dev filename2.sql
+# Promotion - 2026-02-20 16:30:21.057489
+# User: None
+# DEV -> PREP_TEST
+# Count: 2
+
+ddl/ent_dev/CUSTOMERS.sql
+ddl/ent_dev/PRODUCTS.sql
