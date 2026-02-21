@@ -1,7 +1,7 @@
-# Promotion - 2026-02-20 16:30:21.057489
+# Promotion - 2026-02-20 16:34:13.002798
 # User: None
 # DEV -> PREP_TEST
 # Count: 2
 
 ddl/ent_dev/CUSTOMERS.sql
-ddl/ent_dev/PRODUCTS.sql
+ddl/ent_dev/LOCATIONS.sql
