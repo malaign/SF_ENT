@@ -1,0 +1,136 @@
+# .github/workflows/deploy-snowflake.yml
+
+name: Deploy to Snowflake
+
+on:
+  push:
+    branches:
+      - DEV
+    paths:
+      - '**/*.sql'
+  pull_request:
+    branches:
+      - DEV
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'DEV'
+        type: choice
+        options:
+          - DEV
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+  SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+  SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+  SNOWFLAKE_DATABASE: DATAMOD
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set environment variables
+        id: set-env
+        run: |
+          # Determine environment based on branch or input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [ "${{ github.ref }}" == "refs/heads/DEV" ]; then
+            ENV="DEV"
+          else
+            ENV="DEV"
+          fi
+          
+          echo "ENVIRONMENT=$ENV" >> $GITHUB_OUTPUT
+          echo "SCHEMA=ENT_$ENV" >> $GITHUB_OUTPUT
+          echo "🎯 Deploying to: $ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install schemachange
+        run: |
+          pip install schemachange
+
+      - name: Replace environment placeholders
+        run: |
+          # Replace <ENV> with actual environment in all SQL files
+          find . -name "*.sql" -type f -exec sed -i "s/<ENV>/${{ steps.set-env.outputs.ENVIRONMENT }}/g" {} \;
+          find . -name "*.sql" -type f -exec sed -i "s/<env>/${{ steps.set-env.outputs.ENVIRONMENT }}/g" {} \;
+          echo "✅ Replaced <ENV> placeholders with ${{ steps.set-env.outputs.ENVIRONMENT }}"
+
+      - name: Deploy with schemachange (DEV)
+        if: steps.set-env.outputs.ENVIRONMENT == 'DEV'
+        env:
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_DEV }}
+        run: |
+          schemachange deploy \
+            --config-folder . \
+            --root-folder . \
+            --snowflake-account $SNOWFLAKE_ACCOUNT \
+            --snowflake-user $SNOWFLAKE_USER \
+            --snowflake-role $SNOWFLAKE_ROLE \
+            --snowflake-warehouse $SNOWFLAKE_WAREHOUSE \
+            --snowflake-database $SNOWFLAKE_DATABASE \
+            --snowflake-schema ENT_DEV \
+            --change-history-table SCHEMACHANGE_HISTORY \
+            --create-change-history-table \
+            --verbose
+
+      - name: Deploy with schemachange (TEST)
+        if: steps.set-env.outputs.ENVIRONMENT == 'TEST'
+        env:
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_TEST }}
+        run: |
+          schemachange deploy \
+            --config-folder . \
+            --root-folder . \
+            --snowflake-account $SNOWFLAKE_ACCOUNT \
+            --snowflake-user $SNOWFLAKE_USER \
+            --snowflake-role $SNOWFLAKE_ROLE \
+            --snowflake-warehouse $SNOWFLAKE_WAREHOUSE \
+            --snowflake-database $SNOWFLAKE_DATABASE \
+            --snowflake-schema ENT_TEST \
+            --change-history-table SCHEMACHANGE_HISTORY \
+            --create-change-history-table \
+            --verbose
+
+      - name: Deploy with schemachange (PROD)
+        if: steps.set-env.outputs.ENVIRONMENT == 'PROD'
+        env:
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_PROD }}
+        run: |
+          schemachange deploy \
+            --config-folder . \
+            --root-folder . \
+            --snowflake-account $SNOWFLAKE_ACCOUNT \
+            --snowflake-user $SNOWFLAKE_USER \
+            --snowflake-role $SNOWFLAKE_ROLE \
+            --snowflake-warehouse $SNOWFLAKE_WAREHOUSE \
+            --snowflake-database $SNOWFLAKE_DATABASE \
+            --snowflake-schema ENT_PROD \
+            --change-history-table SCHEMACHANGE_HISTORY \
+            --create-change-history-table \
+            --verbose
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ steps.set-env.outputs.ENVIRONMENT }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Schema | ${{ steps.set-env.outputs.SCHEMA }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Database | $SNOWFLAKE_DATABASE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
