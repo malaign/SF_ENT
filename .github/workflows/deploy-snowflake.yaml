@@ -32,10 +32,11 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
         run: |
           schemachange deploy \
-            --root-folder migrations \
-            --snowflake-account $SNOWFLAKE_ACCOUNT \
-            --snowflake-user $SNOWFLAKE_USER \
-            --snowflake-role $SNOWFLAKE_ROLE \
+            --config-folder . \
+            --config-file-name schemachange-config.yml \
+            --snowflake-account ${{ secrets.SNOWFLAKE_ACCOUNT }} \
+            --snowflake-user ${{ secrets.SNOWFLAKE_USER }} \
+            --snowflake-role ${{ secrets.SNOWFLAKE_ROLE }}
             --snowflake-warehouse $SNOWFLAKE_WAREHOUSE \
             --snowflake-database $SNOWFLAKE_DATABASE \
             --change-history-table SCHEMACHANGE.CHANGE_HISTORY \
