@@ -1,27 +1,16 @@
 # schemachange-config.yml
-
 config-version: 1
 
-# Root folder containing SQL scripts
-root-folder: .
+root-folder: 2026Q1
 
-# Modules folder (optional)
-modules-folder: null
-
-# Variables to pass to scripts
 vars:
   database_name: DATAMOD
   warehouse_name: VW_DATAMOD_REPORT_S
+  schema_name: PUBLIC
 
-# Change history table settings
-change-history-table: SCHEMACHANGE_HISTORY
+change-history-table: DATAMOD.PUBLIC.SCHEMACHANGE_HISTORY
 create-change-history-table: true
 
-# Dry run mode (set to true to preview without executing)
 dry-run: false
-
-# Auto commit
 autocommit: true
-
-# Verbose output
 verbose: true
