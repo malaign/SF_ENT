@@ -4,11 +4,10 @@ name: Deploy to Snowflake DEV
 on:
   push:
     branches:
-      - DEV  # Triggers after PR is merged (merge = push to target branch)
+      - DEV
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true  # Critical!
     runs-on: ubuntu-latest
     
     steps:
