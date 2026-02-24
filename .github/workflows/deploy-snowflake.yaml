@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: 13.64.0.0
+    runs-on: self-hosted
     
     steps:
       - name: Checkout repository
