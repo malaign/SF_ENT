@@ -1,11 +1,12 @@
 # Promotion Filelist
-# Generated: 2026-03-05 04:48:00
+# Generated: 2026-03-05 08:06:17
 # User: None
 # Feature Branch: ftr-preptest-20260305-001
 # Feature Tag: feature-test-20260305-001
 # Source: DEV -> Target: PREP_TEST
-# File Count: 2
+# File Count: 3
 
 # Files to promote:
-2026Q1/V2026.02.23.10__ENT_DEV.CUSTOMERS.sql
+2026Q1/V2026.03.05.5__ENT_DEV.DEMO_VIEW_LEVEL1.sql
 2026Q1/V2026.03.05.7__ENT_DEV.DEMO_VIEW_LEVEL2.sql
+2026Q1/V2026.03.05.8__ENT_DEV.CUSTOMERS.sql
